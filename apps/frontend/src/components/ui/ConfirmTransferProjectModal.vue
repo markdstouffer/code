@@ -2,7 +2,7 @@
 	<NewModal ref="modal" fade="warning" width="550px">
 		<template #title>
 			<div class="flex items-center gap-2">
-				<span class="text-lg font-extrabold text-contrast">Transfer</span>
+				<span class="text-lg font-extrabold text-contrast">{{ formatMessage(messages.transferTitle) }}</span>
 				<Avatar
 					:src="project.icon_url"
 					:raw-src="project.raw_icon_url"
@@ -13,15 +13,14 @@
 			</div>
 		</template>
 		<div class="flex flex-col gap-4">
-			<Admonition type="warning" header="Beware of scams">
-				Do not transfer projects to buyers. This is a common scam and against our TOS. If you
-				encounter a buyer, please
+			<Admonition type="warning" :header="bewareTitle">
+				{{ formatMessage(messages.bewarePrefix) }}
 				<a
 					href="https://support.modrinth.com"
 					target="_blank"
 					rel="noopener noreferrer"
 					class="underline"
-					>contact support</a
+					>{{ formatMessage(messages.supportLink) }}</a
 				>.
 			</Admonition>
 			<div
@@ -51,18 +50,18 @@
 				</div>
 			</div>
 			<ul class="m-0 flex flex-col gap-1 pl-6 text-secondary">
-				<li>You will immediately lose owner access to this project</li>
-				<li>The new owner can modify or delete the project at any time</li>
-				<li>This action cannot be undone</li>
+				<li>{{ formatMessage(messages.ownerAccess) }}</li>
+				<li>{{ formatMessage(messages.modifications) }}</li>
+				<li>{{ formatMessage(messages.areYouSure) }}</li>
 			</ul>
 			<div>
 				<p class="m-0 mb-2">
-					To confirm this transfer, type
-					<span class="font-bold text-contrast">{{ project.name }}</span> below
+					{{ formatMessage(messages.confirmPrefix) }}
+					<span class="font-bold text-contrast">{{ project.name }}</span> {{ formatMessage(messages.confirmSuffix) }}
 				</p>
 				<Input
 					v-model="confirmationText"
-					:placeholder="`Enter ${project.name}`"
+					:placeholder="`${formatMessage(messages.placeholderPrefix)} ${project.name}`"
 					wrapper-class="w-full"
 				/>
 			</div>
@@ -71,11 +70,11 @@
 			<div class="flex justify-end gap-2">
 				<Button @click="hide">
 					<XIcon />
-					Cancel
+					{{ formatMessage(messages.cancel) }}
 				</Button>
 				<Button type="colored" color="red" :disabled="!isConfirmEnabled" @click="onConfirmClick">
 					<TransferIcon />
-					Transfer ownership
+					{{ formatMessage(messages.transferFull) }}
 				</Button>
 			</div>
 		</template>
@@ -84,7 +83,7 @@
 
 <script setup lang="ts">
 import { RightArrowIcon, TransferIcon, XIcon } from '@modrinth/assets'
-import { Admonition, Avatar, Button, Input, NewModal } from '@modrinth/ui'
+import { Admonition, Avatar, Button, defineMessages, Input, NewModal, useVIntl } from '@modrinth/ui'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -99,8 +98,63 @@ const props = defineProps<{
 	onConfirm: () => void
 }>()
 
+const { formatMessage } = useVIntl()
+
+const messages = defineMessages({
+	transferTitle: {
+		id: 'transfer.title',
+		defaultMessage: 'Transfer',
+	},
+	transferFull: {
+		id: 'transfer.full',
+		defaultMessage: 'Transfer ownership'
+	},
+	bewareTitle: {
+		id: 'beware.title',
+		defaultMessage: 'Beware of scams',
+	},
+	bewarePrefix: {
+		id: 'beware.prefix',
+		defaultMessage: 'Do not transfer projects to buyers. This is a common scam and against our TOS. If you encounter a buyer, please',
+	},
+	supportLink: {
+		id: 'beware.supportLink',
+		defaultMessage: 'contact support'
+	},
+	ownerAccess: {
+		id: 'warn.ownerAccess',
+		defaultMessage: 'You will immediately lose owner access to this project',
+	},
+	modifications: {
+		id: 'warn.modifications',
+		defaultMessage: 'The new owner can modify or delete the project at any time',
+	},
+	areYouSure: {
+		id: 'warn.areYouSure',
+		defaultMessage: 'This action cannot be undone',
+	},
+	confirmPrefix: {
+		id: 'confirm.prefix',
+		defaultMessage: 'To confirm this transfer, type',
+	},
+	confirmSuffix: {
+		id: 'confirm.suffix',
+		defaultMessage: 'below',
+	},
+	placeholderPrefix: {
+		id: 'placeholder.prefix',
+		defaultMessage: 'Enter',
+	},
+	cancel: {
+		id: 'cancel',
+		defaultMessage: 'Cancel',
+	},
+})
+
 const modal = ref<InstanceType<typeof NewModal>>()
 const confirmationText = ref('')
+
+const bewareTitle = computed(() => formatMessage(messages.bewareTitle))
 
 const isConfirmEnabled = computed(
 	() =>
